@@ -30,7 +30,7 @@
 @property (nonatomic, strong) UIButton *closeBtn;
 
 /** 展示的内容数组 */
-@property (nonatomic, copy) NSArray *contents;
+@property (nonatomic, strong) NSMutableArray *contents;
 
 /** 当前显示的索引 */
 @property (nonatomic, assign) NSInteger currentIndex;
@@ -46,8 +46,9 @@ static CGFloat defaultLeftMargin = 10.0;
 {
     self = [super initWithFrame:frame];
     if (self) {
+        NSAssert(contents.count >= 1, @"标题数组不能为空");
         // 1.记录传过来的标题数组
-        self.contents = contents;
+        self.contents = [NSMutableArray arrayWithArray:contents];
         // 2.默认初始值
         self.currentIndex = 0;
         self.scrollInterval = defaultScrollInterval;
@@ -111,19 +112,60 @@ static CGFloat defaultLeftMargin = 10.0;
 
 - (void)closeButtonAction
 {
-    [self.timer invalidate];
-    self.timer = nil;
-    if (self.delegate && [self.delegate respondsToSelector:@selector(noticeViewClickCloseButton)]) {
-        [self.delegate noticeViewClickCloseButton];
+    CGFloat btnWidth = self.bounds.size.height;
+    if (self.contents.count == 2) {
+        
+        // 1.暂停并销毁定时器
+        [self.timer invalidate];
+        self.timer = nil;
+        
+        // 2.删除secondLabel, 改变firstLabel的位置及显示内容, 并且更新标题数组
+        [self.contents removeObjectAtIndex:self.currentIndex];
+        [_secondLabel removeFromSuperview];
+        _secondLabel = nil;
+        _firstLabel.text = self.contents.firstObject;
+        _firstLabel.frame = CGRectMake(self.leftMargin, 0.0, self.bounds.size.width - btnWidth - self.leftMargin, btnWidth);
+        
+    } else if (self.contents.count == 1) {
+    
+        // 直接关闭
+        if (self.delegate && [self.delegate respondsToSelector:@selector(noticeViewClickCloseButton)]) {
+            [self.delegate noticeViewClickCloseButton];
+        }
+        [self removeFromSuperview];
+    } else {
+    
+        // 1.暂停并销毁定时器
+        [self.timer invalidate];
+        self.timer = nil;
+        
+        // 2.更新标题数组
+        [self.contents removeObjectAtIndex:self.currentIndex];
+        [self updateDisplayingLabelText];
+        
+        // 3.重新开启定时器
+        [self startTimer];
     }
-    [self removeFromSuperview];
 }
 
 #pragma mark - Util
 
+/* 更新当前显示文本的内容 */
+- (void)updateDisplayingLabelText
+{
+    // 1.获取当前正在显示的label
+    YYLabel *displayLabel = _firstLabel.isShowing ? _firstLabel : _secondLabel;
+    if (self.currentIndex == self.contents.count) {
+        self.currentIndex = 0;
+    }
+    displayLabel.text = self.contents[self.currentIndex];
+}
+
 /* 开启定时器 */
 - (void)startTimer
 {
+    if (self.timer != nil) { return; }
+    
     __weak typeof(self) weakSelf = self;
     self.timer = [NSTimer scheduledTimerWithTimeInterval:self.scrollInterval repeats:YES block:^(NSTimer * _Nonnull timer) {
         [weakSelf changeLabelFrame];
@@ -202,7 +244,7 @@ static CGFloat defaultLeftMargin = 10.0;
 
 - (void)dealloc
 {
-    NSLog(@"%s", __FUNCTION__);
+    NSLog(@"YYNoticeView's timer dealloc");
 }
 
 #pragma mark - Public Method
@@ -210,10 +252,7 @@ static CGFloat defaultLeftMargin = 10.0;
 - (void)startScroll
 {
     if (self.contents.count > 1) {
-        
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(self.scrollInterval * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [self startTimer];
-        });
+        [self startTimer];
     }
 }
 
