@@ -256,4 +256,25 @@ static CGFloat defaultLeftMargin = 10.0;
     }
 }
 
+- (void)resetContents:(NSArray<NSString *> *)contents
+{
+    // 1.暂停并销毁定时器
+    [self.timer invalidate];
+    self.timer = nil;
+    
+    // 2.先清空原数组, 再更新内容数组
+    [_contents removeAllObjects];
+    [_contents addObjectsFromArray:contents];
+    
+    // 3.获取正在显示的label
+    YYLabel *displayingLabel = _firstLabel.isShowing ? _firstLabel : _secondLabel;
+    displayingLabel.text = self.contents.firstObject;
+    
+    // 4.重置当前显示的索引
+    _currentIndex = 0;
+    
+    // 5.再次开始滚动
+    [self startTimer];
+}
+
 @end

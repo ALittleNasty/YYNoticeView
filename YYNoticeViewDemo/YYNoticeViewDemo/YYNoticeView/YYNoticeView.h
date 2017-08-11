@@ -51,4 +51,9 @@
  */
 - (void)startScroll;
 
+/**
+ *  重新设置滚动内容
+ */
+- (void)resetContents:(NSArray <NSString *>*)contents;
+
 @end

@@ -12,6 +12,9 @@
 
 @interface ViewController ()<YYNoticeViewDelegate>
 
+/** 通知栏 */
+@property (nonatomic, weak) YYNoticeView *noticeView;
+
 @end
 
 @implementation ViewController
@@ -32,7 +35,7 @@
     noticeView.textFont = [UIFont boldSystemFontOfSize:14];
     noticeView.delegate = self;
     [self.view addSubview:noticeView];
-    
+    self.noticeView = noticeView;
     [noticeView startScroll];
 }
 
@@ -48,5 +51,14 @@
 {
     NSLog(@"点击了第%zd个文本", index);
 }
+
+#pragma mark - Reset Action
+
+- (IBAction)resetButtonAction:(UIButton *)sender
+{
+    NSArray *titles = @[@"百年孤独", @"巨人的陨落", @"霍乱时期的爱情"];
+    [self.noticeView resetContents:titles];
+}
+
 
 @end
