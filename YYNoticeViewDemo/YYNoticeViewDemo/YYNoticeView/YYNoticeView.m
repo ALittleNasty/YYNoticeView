@@ -50,13 +50,21 @@ static CGFloat defaultLeftMargin = 10.0;
         // 1.记录传过来的标题数组
         self.contents = [NSMutableArray arrayWithArray:contents];
         // 2.默认初始值
-        self.currentIndex = 0;
-        self.scrollInterval = defaultScrollInterval;
-        self.leftMargin = defaultLeftMargin;
+        [self basicSetup];
         // 3.初始化子视图
         [self initSubviews]; 
     }
     return self;
+}
+
+#pragma mark - Set Default Value
+
+- (void)basicSetup
+{
+    self.currentIndex = 0;
+    self.scrollInterval = defaultScrollInterval;
+    self.leftMargin = defaultLeftMargin;
+    self.alignment = NSTextAlignmentCenter;
 }
 
 #pragma mark - Init Subviews
@@ -79,6 +87,7 @@ static CGFloat defaultLeftMargin = 10.0;
     _firstLabel.frame = CGRectMake(self.leftMargin, 0.0, self.bounds.size.width - btnWidth - self.leftMargin, btnWidth);
     _firstLabel.textColor = self.textColor;
     _firstLabel.font = self.textFont;
+    _firstLabel.textAlignment = self.alignment;
     _firstLabel.isShowing = YES;
     _firstLabel.text = self.contents.firstObject;
     _firstLabel.userInteractionEnabled = YES;
@@ -93,6 +102,7 @@ static CGFloat defaultLeftMargin = 10.0;
         _secondLabel.frame = CGRectMake(self.leftMargin, btnWidth, self.bounds.size.width - btnWidth - self.leftMargin, btnWidth);
         _secondLabel.textColor = self.textColor;
         _secondLabel.font = self.textFont;
+        _secondLabel.textAlignment = self.alignment;
         _secondLabel.isShowing = NO;
         _secondLabel.userInteractionEnabled = YES;
         UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(labelTapAction:)];
@@ -137,7 +147,7 @@ static CGFloat defaultLeftMargin = 10.0;
     
         // 1.暂停并销毁定时器
         [self.timer invalidate];
-        self.timer = nil;
+        self.timer = nil; 
         
         // 2.更新标题数组
         [self.contents removeObjectAtIndex:self.currentIndex];
@@ -213,32 +223,43 @@ static CGFloat defaultLeftMargin = 10.0;
 
 - (void)setTextFont:(UIFont *)textFont
 {
-    _firstLabel.font = textFont;
+    _textFont = textFont;
+    _firstLabel.font = _textFont;
     if (_secondLabel) {
-        _secondLabel.font = textFont;
+        _secondLabel.font = _textFont;
     }
 }
 
 - (void)setTextColor:(UIColor *)textColor
 {
-    _firstLabel.textColor = textColor;
+    _textColor = textColor;
+    _firstLabel.textColor = _textColor;
     if (_secondLabel) {
-        _secondLabel.textColor = textColor;
+        _secondLabel.textColor = _textColor;
+    }
+}
+
+- (void)setAlignment:(NSTextAlignment)alignment
+{
+    _alignment = alignment;
+    _firstLabel.textAlignment = _alignment;
+    if (_secondLabel) {
+        _secondLabel.textAlignment = _alignment;
     }
 }
 
 -(void)setLeftMargin:(CGFloat)leftMargin
 {
     _leftMargin = leftMargin;
-    CGRect firstFrame = self.firstLabel.frame;
+    CGRect firstFrame = _firstLabel.frame;
     firstFrame.origin.x = _leftMargin;
-    self.firstLabel.frame = firstFrame;
+    _firstLabel.frame = firstFrame;
     
-    if (self.secondLabel) {
+    if (_secondLabel) {
         
-        CGRect secondFrame = self.secondLabel.frame;
+        CGRect secondFrame = _secondLabel.frame;
         secondFrame.origin.x = _leftMargin;
-        self.secondLabel.frame = secondFrame;
+        _secondLabel.frame = secondFrame;
     }
 }
 

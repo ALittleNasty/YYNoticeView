@@ -26,6 +26,9 @@
 /** 滚动时间间隔(默认3秒) */
 @property (nonatomic, assign) NSTimeInterval scrollInterval;
 
+/** 文本显示样式(默认居中) */
+@property (nonatomic) NSTextAlignment alignment;
+
 /** 文本控件距离父控件左边间距(默认10.0) */
 @property (nonatomic, assign) CGFloat leftMargin;
 
